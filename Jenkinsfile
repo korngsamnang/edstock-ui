@@ -5,7 +5,6 @@ pipeline {
         AWS_REGION = 'ap-southeast-1'
         AWS_ACCOUNT_ID = '767398103155'
         ECR_REPO = 'edstock-ui'
-        IMAGE_TAG = 'latest'
     }
 
     stages {
@@ -15,16 +14,19 @@ pipeline {
             }
         }
 
+        stage('Set Image Tag') {
+            steps {
+                script {
+                    def commitHash = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    env.IMAGE_TAG = commitHash
+                }
+            }
+        }
+
         stage('Login to AWS ECR') {
             steps {
-                withCredentials([
-                    string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
-                    string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
-                ]) {
+                withAWS(credentials: 'aws-credentials-id', region: "${AWS_REGION}") {
                     sh '''
-                    aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-                    aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-                    aws configure set region $AWS_REGION
                     aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
                     '''
                 }
@@ -44,10 +46,10 @@ pipeline {
 
     post {
         failure {
-            echo 'UI build or push to ECR failed!'
+            echo '❌ UI build or push to ECR failed!'
         }
         success {
-            echo 'UI Docker image successfully built and pushed to ECR!'
+            echo '✅ UI Docker image successfully built and pushed to ECR!'
         }
     }
 }

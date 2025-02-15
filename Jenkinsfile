@@ -46,14 +46,30 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy UI to EKS') {
+            steps {
+                script {
+                    withCredentials([aws(credentialsId: 'aws-credentials-id', region: "${AWS_REGION}")]) {
+                        dir('k8s') {
+                            sh 'aws eks --region ${AWS_REGION} update-kubeconfig --name my-eks-cluster'
+                            sh 'kubectl apply -f frontend-deployment.yaml'
+                            sh "kubectl set image deployment/frontend frontend=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}"
+                            sh 'kubectl apply -f frontend-service.yaml'
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     post {
         success {
-            echo "✅ UI image successfully built and pushed to AWS ECR: ${IMAGE_TAG}"
+            echo "✅ Newly built UI has been deployed to EKS!"
         }
         failure {
-            echo "❌ UI build or push to ECR failed!"
+            echo "❌ Failed to deploy UI to EKS!"
         }
     }
 }

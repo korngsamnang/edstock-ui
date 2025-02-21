@@ -21,4 +21,4 @@ This repository contains the frontend of the EdStock application. This repositor
 
 ## Deployment Process
 
-The deployment is very similar to the deployment backend API; see [edstock-api](https://github.com/korngsamnang/edstock-ui).
+The deployment is very similar to the deployment backend API; see [edstock-api](https://github.com/korngsamnang/edstock-api).

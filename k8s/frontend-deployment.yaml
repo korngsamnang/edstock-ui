@@ -17,6 +17,6 @@ spec:
                   image: 767398103155.dkr.ecr.ap-southeast-1.amazonaws.com/edstock-ui:b75674d
                   env:
                       - name: NEXT_PUBLIC_API_BASE_URL
-                        value: "http://api.edstock.live"
+                        value: "http://api-service:80"
                   ports:
                       - containerPort: 3000
